@@ -38,15 +38,23 @@ def get_arguments(sysargs = sys.argv[1:]):
     def ambig_base_finder(input_fasta,min=1,max=3):
         seq_dict = {}
         for record in SeqIO.parse(input_fasta, "fasta"):
-          N_bases = re.finditer("[AGCT][^AGCT]{" + str(min) + "," + str(max) + "}[AGCT]", str(record.seq))
-          coord_list = []
-          for mo in N_bases:
-              N_coord = mo.start()
-              coord_list.append(N_coord)
-              print(coord_list)
-          seq_dict[record.id] = coord_list
+            N_bases = re.finditer("[AGCT][^AGCT]{" + str(min) + "," + str(max) + "}[AGCT]", str(record.seq))
+            coord_list = []
+            for mo in N_bases:
+                start_coord = mo.start()
+                end_coord = mo.end()
+                start_coord += 1
+                while start_coord != (end_coord - 1):
+                    coord_list.append(start_coord)
+                    start_coord += 1
+                    print(coord_list)
+
+
+            seq_dict[record.id] = coord_list
         print(seq_dict)
         return(seq_dict)
+
+    
 
     ambig_base_finder(args.input_fasta,args.min,args.max)
 
