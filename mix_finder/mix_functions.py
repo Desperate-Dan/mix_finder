@@ -11,7 +11,7 @@ from Bio import SeqIO
 
 
 # define the arguments for the command
-def get_arguments():
+def get_arguments(sysargs = sys.argv[1:]):
     '''
     Parse the command line arguments.
     '''
@@ -27,20 +27,27 @@ def get_arguments():
     main_group.add_argument('-n', '--window-min', dest='min', default=1,
                             help='Min size for ambiguous window (default = 1)')
 
-    args = parser.parse_args()
-    return args
- 
-    
-# first function to parse the input fasta files and look for non-AGCTs.
-def ambig_base_finder(input_fasta,min=1,max=3):
-  seq_dict = {}
-  for record in SeqIO.parse(input_fasta, "fasta"):        
-    N_bases = re.finditer("[AGCT][^AGCT]{" + str(min) + "," + str(max) + "}[AGCT]", str(record.seq))
-    coord_list = []
-    for mo in N_bases:
-        N_coord = mo.start()
-        coord_list.append(N_coord)
-        print(coord_list)
-    seq_dict[record.id] = coord_list
-  return(seq_dict)
+    if len(sysargs)<1:
+        parser.print_help()
+        sys.exit(-1)
+    else:
+        args = parser.parse_args(sysargs)
 
+
+    # first function to parse the input fasta files and look for non-AGCTs.
+    def ambig_base_finder(input_fasta,min=1,max=3):
+        seq_dict = {}
+        for record in SeqIO.parse(input_fasta, "fasta"):
+          N_bases = re.finditer("[AGCT][^AGCT]{" + str(min) + "," + str(max) + "}[AGCT]", str(record.seq))
+          coord_list = []
+          for mo in N_bases:
+              N_coord = mo.start()
+              coord_list.append(N_coord)
+              print(coord_list)
+          seq_dict[record.id] = coord_list
+        print(seq_dict)
+        return(seq_dict)
+
+    ambig_base_finder(args.input_fasta,args.min,args.max)
+
+get_arguments()
